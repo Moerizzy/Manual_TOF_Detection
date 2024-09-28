@@ -2,3 +2,4 @@
 /condaenv
 /helper_functions
 /tof/__pycache__
+*:Zone.Identifier
