@@ -61,20 +61,29 @@ To start the process you need the following folder structure:
 main.py
 ├── Sites
 |    ├── Site_Name
-|    |    ├── DGM
+|    |    ├── DTM
 |    |    ├── TOP
-|    |    ├── bDOM
-|    |    ├── nDOM
+|    |    ├── iDSM
+|    |    ├── nDSM
 ```
+Abbreviations refer to German governmental data.
+DGM = Digital Terrain Model, TOP = True Orthophoto, bDOM= image-based Digital Surface Model, nDOM = normalized Digital Surface Model 
+
+The files in these folders should build like "Folder_Name_ID.tif" like "bDOM_33_382_5856.tif".
+
+You can either put directly a normalized Digital Surface Model or let it create by DGM and Digital Terrain Model with an image-based Digital Surface Model
 
 The script does have two functionalities:
 1. Creating the TOF classes from the input data with a shapifile as result
 
-Now it's time for the manual refinement!
+```bash
+python main.py "Site_Name" --epsg "EPSG:Number"
+```
+
+Now it's time for the manual refinement in the Site_Name Shapefile!
 
 2. Create the masks to then use them for network training with tif masks as result
 
-Start the Script: 
 ```bash
 python main.py "Site_Name" --create_masks --epsg "EPSG:Number"
 ```

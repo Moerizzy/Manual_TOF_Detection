@@ -43,7 +43,10 @@ def get_file_list(directory, extension=".tif", type=None):
         if type:
             if file.endswith(".tif"):
                 filename, _ = os.path.splitext(file)
-                new_filename = f"{type}_{filename[4:]}{extension}"
+                fileid = filename[4:]
+                if fileid.startswith("_"):
+                    fileid = fileid[1:]
+                new_filename = f"{type}_{fileid}{extension}"
                 new_directory = directory.replace("TOP", type)
                 new_file_path = os.path.join(new_directory, new_filename)
                 # Create the directory if it doesn't exist
@@ -224,9 +227,11 @@ def compute_ndvi(red_band, nir_band):
     return ndvi
 
 
-def subtract_and_save(bDOM, DGM, output_file):
+def subtract_and_save(bDOM, DGM, TOP, output_file):
     """Subtract DGM from bDOM and save the result to a new raster file"""
-    with rasterio.open(bDOM) as bDOM_src, rasterio.open(DGM) as DGM_src:
+    with rasterio.open(bDOM) as bDOM_src, rasterio.open(DGM) as DGM_src, rasterio.open(
+        TOP
+    ) as TOP_src:
         # Resample DGM to match bDOM resolution
         DGM_data = DGM_src.read(
             out_shape=(DGM_src.count, bDOM_src.height, bDOM_src.width),
@@ -236,16 +241,26 @@ def subtract_and_save(bDOM, DGM, output_file):
         # Read bDOM
         bDOM_data = bDOM_src.read(1)
 
-        transform = bDOM_src.transform
-
         # Subtract resampled DGM from bDOM
-        result = bDOM_data - DGM_data
+        result = DGM_data - bDOM_data
+
+        # Resample the result to match TOP resolution
+        result_resampled = np.empty((TOP_src.height, TOP_src.width), dtype=np.float32)
+        rasterio.warp.reproject(
+            source=result,
+            destination=result_resampled,
+            src_transform=bDOM_src.transform,
+            src_crs=bDOM_src.crs,
+            dst_transform=TOP_src.transform,
+            dst_crs=TOP_src.crs,
+            resampling=Resampling.nearest,
+        )
 
         # Save the result to a new raster file
-        profile = bDOM_src.profile
+        profile = TOP_src.profile
         profile.update(dtype=rasterio.float32, count=1)
         with rasterio.open(output_file, "w", **profile) as dst:
-            dst.write(result)
+            dst.write(result_resampled, 1)
 
 
 def calculate_width_length_ratio(polygon):

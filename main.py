@@ -29,10 +29,10 @@ if __name__ == "__main__":
 
     list_path_RGBI = get_file_list(f"Sites/{state}/TOP")
     list_path_shapes = get_file_list(f"Sites/{state}/TOP", ".shp", "SHP")
-    list_path_bDOM = get_file_list(f"Sites/{state}/DGM", ".tif", "bDOM")
-    list_path_DGM = get_file_list(f"Sites/{state}/bDOM", ".tif", "DGM")
+    list_path_bDOM = get_file_list(f"Sites/{state}/DGM", ".tif", "DGM")
+    list_path_DGM = get_file_list(f"Sites/{state}/bDOM", ".tif", "bDOM")
     list_path_nDOM = get_file_list(f"Sites/{state}/TOP", ".tif", "nDOM")
-    path_final_shape = f"Sites/{state}/SHP/{state}_result_merged.shp"
+    path_final_shape = f"Sites/{state}/SHP/{state}.shp"
 
     if create_masks:
         gdf = gpd.read_file(path_final_shape)
@@ -93,7 +93,10 @@ if __name__ == "__main__":
             ## Step 0: Create nDOM
             if not os.path.exists(list_path_nDOM[i]):
                 subtract_and_save(
-                    list_path_bDOM[i], list_path_DGM[i], list_path_nDOM[i]
+                    list_path_bDOM[i],
+                    list_path_DGM[i],
+                    list_path_RGBI[i],
+                    list_path_nDOM[i],
                 )
 
             # Open images
@@ -162,9 +165,9 @@ if __name__ == "__main__":
         tif_tof_classified_gdf.to_file(path_final_shape)
 
         # Delete all temporary files
-        extensions = [".shp", ".cpg", ".dbf", ".prj", ".shx"]
-        for path in list_path_shapes:
-            for ext in extensions:
-                file_path = path.replace(".shp", ext)
-                if os.path.exists(file_path):
-                    os.remove(file_path)
+        # extensions = [".shp", ".cpg", ".dbf", ".prj", ".shx"]
+        # for path in list_path_shapes:
+        #     for ext in extensions:
+        #         file_path = path.replace(".shp", ext)
+        #         if os.path.exists(file_path):
+        #             os.remove(file_path)
